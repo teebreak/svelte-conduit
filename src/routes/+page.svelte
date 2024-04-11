@@ -1,20 +1,22 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
-  import ArticlePreview from '$lib/components/ArticlePreview.svelte';
+	import ArticlePreview from '$lib/components/ArticlePreview.svelte';
 	import type Article from '$lib/models/Article';
 
 	const DEFAULT_ARTICLE_LIMIT = 10;
 	const articleParams = writable({ limit: DEFAULT_ARTICLE_LIMIT, offset: 0 });
-  let articles: Article[] = [];
+	let articles: Article[] = [];
 	let pageCount = 1;
 	let activePage = 1;
 
 	articleParams.subscribe(async (params) => {
-		// @ts-expect-error fix later
-		articles = await fetchGlobalArticles(params);
+		const sanitizedParams = Object.fromEntries(
+			Object.entries(params).map(([key, value]) => [key, value.toString()])
+		);
+		articles = await fetchGlobalArticles(sanitizedParams);
 	});
 
-	async function fetchGlobalArticles(params: Record<string, string>) {
+	async function fetchGlobalArticles(params: Record<string, string>): Promise<Article[]> {
 		const requestParams = new URLSearchParams(params);
 		const res = await fetch(`https://api.realworld.io/api/articles?${requestParams}`);
 		const articles = await res.json();
@@ -23,7 +25,7 @@
 		return articles.articles;
 	}
 
-	async function fetchTags() {
+	async function fetchTags(): Promise<{ tags: string[] }> {
 		const res = await fetch('https://api.realworld.io/api/tags');
 		return res.json();
 	}
