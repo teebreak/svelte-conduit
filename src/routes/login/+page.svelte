@@ -1,3 +1,34 @@
+<script lang="ts">
+  import { user } from '$lib/stores/user';
+  import { goto } from '$app/navigation';
+
+  let form;
+  let errors = [];
+
+  function login() {
+    const formData = new FormData(form);
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    fetch('https://api.realworld.io/api/users/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user: { email, password } }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.errors) {
+          errors = data.errors;
+        } else {
+          $user = data.user;
+          goto('/');
+        }
+      });
+  }
+</script>
+
 <div class="auth-page">
   <div class="container page">
     <div class="row">
@@ -7,18 +38,34 @@
           <a href="/register">Need an account?</a>
         </p>
 
-        <ul class="error-messages">
-          <li>That email is already taken</li>
-        </ul>
+        {#each errors as errorMessage}
+          <ul class="error-messages">
+            <li>{errorMessage}</li>
+          </ul>
+        {/each}
 
-        <form>
+        <form on:submit={login} bind:this={form}>
           <fieldset class="form-group">
-            <input class="form-control form-control-lg" type="text" placeholder="Email" />
+            <input
+              required
+              class="form-control form-control-lg"
+              type="email"
+              placeholder="Email"
+              id="email"
+              name="email"
+            />
           </fieldset>
           <fieldset class="form-group">
-            <input class="form-control form-control-lg" type="password" placeholder="Password" />
+            <input
+              required
+              class="form-control form-control-lg"
+              type="password"
+              placeholder="Password"
+              id="password"
+              name="password"
+            />
           </fieldset>
-          <button class="btn btn-lg btn-primary pull-xs-right">Sign in</button>
+          <button type="submit" class="btn btn-lg btn-primary pull-xs-right">Sign in</button>
         </form>
       </div>
     </div>

@@ -2,7 +2,8 @@
 	import { writable } from 'svelte/store';
 	import ArticlePreview from '$lib/components/ArticlePreview.svelte';
 	import type Article from '$lib/models/Article';
-	import { DEFAULT_ARTICLE_LIMIT } from '$lib/const/default-article-limit';
+	import { DEFAULT_ARTICLE_LIMIT } from '$lib/constants/default-article-limit';
+	import { user } from '$lib/stores/user';
 
 	const articleParams = writable({ limit: DEFAULT_ARTICLE_LIMIT, offset: 0 });
 	let articles: Article[] = [];
@@ -44,9 +45,11 @@
 			<div class="col-md-9">
 				<div class="feed-toggle">
 					<ul class="nav nav-pills outline-active">
-						<li class="nav-item">
-							<a class="nav-link" href="">Your Feed</a>
-						</li>
+						{#if $user}
+							<li class="nav-item">
+								<a class="nav-link" href="">Your Feed</a>
+							</li>
+						{/if}
 						<li class="nav-item">
 							<a class="nav-link active" href="">Global Feed</a>
 						</li>

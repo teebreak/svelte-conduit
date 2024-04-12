@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import type Profile from '$lib/models/Profile';
   import ArticlePreview from '$lib/components/ArticlePreview.svelte';
-  import { DEFAULT_ARTICLE_LIMIT } from '$lib/const/default-article-limit';
+  import { DEFAULT_ARTICLE_LIMIT } from '$lib/constants/default-article-limit';
   import type Article from '$lib/models/Article';
   import { writable } from 'svelte/store';
 

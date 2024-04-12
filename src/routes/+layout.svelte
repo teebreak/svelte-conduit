@@ -1,3 +1,14 @@
+<script lang="ts">
+  import { user } from '$lib/stores/user';
+  import { goto } from '$app/navigation';
+
+  function signout() {
+    $user = null;
+    localStorage.removeItem('token');
+    goto('/');
+  }
+</script>
+
 <header>
   <nav class="navbar navbar-light">
     <div class="container">
@@ -7,12 +18,28 @@
           <!-- Add "active" class when you're on that page" -->
           <a class="nav-link active" href="/">Home</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/login">Sign in</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/register">Sign up</a>
-        </li>
+        {#if !$user}
+          <li class="nav-item">
+            <a class="nav-link" href="/login">Sign in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/register">Sign up</a>
+          </li>
+        {/if}
+        {#if $user}
+          <li class="nav-item">
+            <a class="nav-link" href="/editor">New post</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/{$user.username}">My profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/settings">Settings</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" on:click={signout}>Sign out</a>
+          </li>
+        {/if}
       </ul>
     </div>
   </nav>
