@@ -2,8 +2,8 @@
 	import { writable } from 'svelte/store';
 	import ArticlePreview from '$lib/components/ArticlePreview.svelte';
 	import type Article from '$lib/models/Article';
+	import { DEFAULT_ARTICLE_LIMIT } from '$lib/const/default-article-limit';
 
-	const DEFAULT_ARTICLE_LIMIT = 10;
 	const articleParams = writable({ limit: DEFAULT_ARTICLE_LIMIT, offset: 0 });
 	let articles: Article[] = [];
 	let pageCount = 1;

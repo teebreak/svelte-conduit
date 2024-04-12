@@ -1,6 +1,31 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import type Profile from '$lib/models/Profile';
+  import ArticlePreview from '$lib/components/ArticlePreview.svelte';
+  import { DEFAULT_ARTICLE_LIMIT } from '$lib/const/default-article-limit';
+  import type Article from '$lib/models/Article';
+  import { writable } from 'svelte/store';
+
+  const articleParams = writable({ limit: DEFAULT_ARTICLE_LIMIT, offset: 0, author: $page.params.username });
+  let articles: Article[] = [];
+  let pageCount = 1;
+  let activePage = 1;
+
+  articleParams.subscribe(async (params) => {
+    const sanitizedParams = Object.fromEntries(
+      Object.entries(params).map(([key, value]) => [key, value.toString()])
+    );
+    articles = await fetchUserArticles(sanitizedParams);
+  });
+
+  async function fetchUserArticles(params: Record<string, string>): Promise<Article[]> {
+    const requestParams = new URLSearchParams(params);
+    const res = await fetch(`https://api.realworld.io/api/articles?${requestParams}`);
+    const articles = await res.json();
+    pageCount = Math.ceil(articles.articlesCount / DEFAULT_ARTICLE_LIMIT);
+
+    return articles.articles;
+  }
 
   async function fetchProfile(): Promise<Profile> {
     const response = await fetch(`https://conduit.productionready.io/api/profiles/${$page.params.username}`);
@@ -23,10 +48,10 @@
               <i class="ion-plus-round"></i>
               &nbsp; Follow {profile.username}
             </button>
-            <button class="btn btn-sm btn-outline-secondary action-btn">
-              <i class="ion-gear-a"></i>
-              &nbsp; Edit Profile Settings
-            </button>
+<!--            <button class="btn btn-sm btn-outline-secondary action-btn">-->
+<!--              <i class="ion-gear-a"></i>-->
+<!--              &nbsp; Edit Profile Settings-->
+<!--            </button>-->
           </div>
         </div>
       </div>
@@ -46,35 +71,25 @@
             </ul>
           </div>
 
-          <div class="article-preview">
-            <div class="article-meta">
-              <a href="/profile/albert-pai"><img src="http://i.imgur.com/N4VcUeJ.jpg" /></a>
-              <div class="info">
-                <a href="/profile/albert-pai" class="author">Albert Pai</a>
-                <span class="date">January 20th</span>
-              </div>
-              <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                <i class="ion-heart"></i> 32
-              </button>
-            </div>
-            <a href="/article/the-song-you" class="preview-link">
-              <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-              <p>This is the description for the post.</p>
-              <span>Read more...</span>
-              <ul class="tag-list">
-                <li class="tag-default tag-pill tag-outline">Music</li>
-                <li class="tag-default tag-pill tag-outline">Song</li>
-              </ul>
-            </a>
-          </div>
+          {#each articles as article}
+            <ArticlePreview {article} />
+          {/each}
 
           <ul class="pagination">
-            <li class="page-item active">
-              <a class="page-link" href="">1</a>
-            </li>
-            <li class="page-item">
-              <a class="page-link" href="">2</a>
-            </li>
+            {#each Array(pageCount) as _, i}
+              <li
+                class="page-item"
+                class:active={i + 1 === activePage}
+                on:click={() => {
+								activePage = i + 1;
+								articleParams.update((p) => ({ ...p, offset: i * DEFAULT_ARTICLE_LIMIT }));
+							}}
+              >
+                <a class="page-link">
+                  {i + 1}
+                </a>
+              </li>
+            {/each}
           </ul>
         </div>
       </div>
